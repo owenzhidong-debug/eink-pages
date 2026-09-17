@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>连接设备 - iPhone 16 原型</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --design-width: 440;
+      --design-height: 956;
+      --scale: 1;
+      color: #333;
+      background: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .phone {
+      position: relative;
+      width: min(100vw, calc(100dvh * 440 / 956), 440px);
+      aspect-ratio: 440 / 956;
+      overflow: hidden;
+      background: #f5f3f1;
+    }
+
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 440px;
+      height: 956px;
+      overflow: hidden;
+      transform: scale(var(--scale));
+      transform-origin: top left;
+      background: #f5f3f1;
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 440px;
+      height: 54px;
+      z-index: 5;
+    }
+
+    .time {
+      position: absolute;
+      top: 13.65px;
+      left: 22.51px;
+      width: 57.89px;
+      height: 30.02px;
+      display: grid;
+      place-items: center;
+      color: #000;
+      font-size: 15.01px;
+      font-weight: 600;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .cell {
+      position: absolute;
+      top: 22.94px;
+      left: 360.81px;
+      width: 18.22px;
+      height: 11.44px;
+    }
+
+    .wifi {
+      position: absolute;
+      top: 22.58px;
+      left: 384.42px;
+      width: 16.37px;
+      height: 11.76px;
+    }
+
+    .battery {
+      position: absolute;
+      top: 22.23px;
+      left: 406.19px;
+      width: 26.8px;
+      height: 12.86px;
+    }
+
+    .battery-body {
+      position: absolute;
+      top: 0.35px;
+      left: 0;
+      width: 23.58px;
+      height: 12.15px;
+      border: 1.07px solid rgb(0 0 0 / 40%);
+      border-radius: 2.86px;
+    }
+
+    .battery-power {
+      position: absolute;
+      top: 2.5px;
+      left: 2.14px;
+      width: 19.3px;
+      height: 7.86px;
+      border-radius: 1.43px;
+      background: #000;
+    }
+
+    .battery-head {
+      position: absolute;
+      top: 4.29px;
+      right: 0;
+      width: 2.14px;
+      height: 4.28px;
+    }
+
+    .hero-bg {
+      position: absolute;
+      top: 171.77px;
+      left: 0;
+      width: 440px;
+      height: 153.23px;
+    }
+
+    .device-shell {
+      position: absolute;
+      top: 86.65px;
+      left: 17.59px;
+      width: 147.71px;
+      height: 228px;
+      overflow: hidden;
+    }
+
+    .device-shell img {
+      position: absolute;
+      top: 0;
+      left: -168.9px;
+      width: 332.83px;
+      height: 228px;
+      max-width: none;
+    }
+
+    .device-cover {
+      position: absolute;
+      top: 94.95px;
+      left: 43.64px;
+      width: 140.24px;
+      height: 186.99px;
+      overflow: hidden;
+      -webkit-mask-image: url("assets/figma-iphone16-connect/mask.svg");
+      mask-image: url("assets/figma-iphone16-connect/mask.svg");
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-size: 100.41px 170.94px;
+      mask-size: 100.41px 170.94px;
+      -webkit-mask-position: 18.26px 15.77px;
+      mask-position: 18.26px 15.77px;
+    }
+
+    .device-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .device-copy {
+      position: absolute;
+      top: 100px;
+      left: 184px;
+      width: 194px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .device-name {
+      margin: 0;
+      color: #333;
+      font-size: 28px;
+      font-weight: 500;
+      line-height: normal;
+      letter-spacing: 0.2px;
+    }
+
+    .device-model {
+      margin: 0;
+      color: #666;
+      font-size: 17px;
+      font-weight: 500;
+      line-height: normal;
+    }
+
+    .connection-state {
+      position: absolute;
+      top: 265px;
+      left: 184px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px 10px 13px;
+      border-radius: 18px;
+      background: rgb(153 153 153 / 20%);
+    }
+
+    .connection-dot {
+      width: 6px;
+      height: 6px;
+      display: block;
+    }
+
+    .connection-text {
+      color: #999;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 16px;
+      white-space: nowrap;
+    }
+
+    .device-switch {
+      position: absolute;
+      top: 107.5px;
+      left: 390px;
+      width: 26px;
+      height: 26px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+    }
+
+    .action-list {
+      position: absolute;
+      top: 340px;
+      left: 16px;
+      width: 408px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .action-card {
+      width: 408px;
+      height: 80px;
+      border: 0;
+      border-radius: 18px;
+      padding: 20px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      color: #333;
+      font: inherit;
+      text-align: left;
+    }
+
+    .action-label {
+      font-size: 17px;
+      font-weight: 500;
+      line-height: normal;
+      white-space: nowrap;
+    }
+
+    .action-icon {
+      width: 40px;
+      height: 40px;
+      position: relative;
+      flex: 0 0 auto;
+      overflow: hidden;
+    }
+
+    .action-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .link-frame {
+      position: absolute;
+      inset: 4.5px;
+      border: 3px solid #333;
+      border-radius: 6.2px;
+    }
+
+    .link-frame img {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 21px;
+      height: 21px;
+    }
+
+    .font-main {
+      position: absolute;
+      top: 3.73px;
+      left: 4.8px;
+      width: 30px;
+      height: 31.11px;
+    }
+
+    .font-plus {
+      position: absolute;
+      top: 24.8px;
+      left: 24.8px;
+      width: 9px;
+      height: 10px;
+    }
+
+    .tabbar {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 440px;
+      height: 84px;
+      padding: 7px 31px 8px;
+      background: #f5f3f1;
+    }
+
+    .tab-items {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 62px;
+      height: 43px;
+    }
+
+    .tab {
+      width: 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: #333;
+      font-size: 10px;
+      font-weight: 500;
+      line-height: normal;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tab-icon {
+      position: relative;
+      width: 26px;
+      height: 26px;
+    }
+
+    .tab-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .tab-store img,
+    .tab-apps img {
+      position: absolute;
+      width: auto;
+      height: auto;
+    }
+
+    .tab-store img {
+      top: 2.01px;
+      left: 0.69px;
+      width: 25px;
+      height: 21.31px;
+    }
+
+    .tab-apps img {
+      top: 0.94px;
+      left: 0.5px;
+      width: 25px;
+      height: 24.13px;
+    }
+
+    .settings-poly {
+      position: absolute;
+      top: 0.58px;
+      left: 1.67px;
+      width: 21.65px;
+      height: 23.84px;
+    }
+
+    .settings-dot {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 10px;
+      height: 10px;
+    }
+
+    .home-indicator {
+      position: absolute;
+      left: 153px;
+      bottom: 10.5px;
+      width: 134px;
+      height: 5px;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+    }
+
+    @media (min-width: 441px) {
+      body {
+        background: #ececec;
+      }
+
+      .phone {
+        box-shadow: 0 18px 60px rgb(0 0 0 / 12%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="phone" aria-label="连接设备移动端原型">
+    <section class="screen">
+      <div class="status-bar" aria-hidden="true">
+        <div class="time">9:41</div>
+        <img class="cell" src="assets/figma-iphone16-connect/cell.svg" alt="">
+        <img class="wifi" src="assets/figma-iphone16-connect/wifi.svg" alt="">
+        <div class="battery">
+          <div class="battery-body"></div>
+          <div class="battery-power"></div>
+          <img class="battery-head" src="assets/figma-iphone16-connect/battery-head.svg" alt="">
+        </div>
+      </div>
+
+      <img class="hero-bg" src="assets/figma-iphone16-connect/bg.svg" alt="">
+
+      <div class="device-shell" aria-hidden="true">
+        <img src="assets/figma-iphone16-connect/image2.png" alt="">
+      </div>
+      <div class="device-cover" aria-hidden="true">
+        <img src="assets/figma-iphone16-connect/image90.png" alt="">
+      </div>
+
+      <div class="device-copy">
+        <h1 class="device-name">DarwinesOnyxeaed epaper...</h1>
+        <p class="device-model">Boox Tile</p>
+      </div>
+
+      <div class="connection-state">
+        <img class="connection-dot" src="assets/figma-iphone16-connect/ellipse24.svg" alt="">
+        <span class="connection-text">未连接</span>
+      </div>
+
+      <button class="device-switch" aria-label="切换设备">
+        <img src="assets/figma-iphone16-connect/chevron.svg" alt="">
+      </button>
+
+      <div class="action-list">
+        <button class="action-card" type="button">
+          <span class="action-label">导入图书</span>
+          <span class="action-icon">
+            <img src="assets/figma-iphone16-connect/import-book.svg" alt="">
+          </span>
+        </button>
+        <button class="action-card" type="button">
+          <span class="action-label">导入壁纸</span>
+          <span class="action-icon">
+            <img src="assets/figma-iphone16-connect/import-wallpaper.svg" alt="">
+          </span>
+        </button>
+        <button class="action-card" type="button">
+          <span class="action-label">网页链接</span>
+          <span class="action-icon" aria-hidden="true">
+            <span class="link-frame">
+              <img src="assets/figma-iphone16-connect/link-inner.svg" alt="">
+            </span>
+          </span>
+        </button>
+        <button class="action-card" type="button">
+          <span class="action-label">导入字体</span>
+          <span class="action-icon" aria-hidden="true">
+            <img class="font-main" src="assets/figma-iphone16-connect/font-main.svg" alt="">
+            <img class="font-plus" src="assets/figma-iphone16-connect/font-plus.svg" alt="">
+          </span>
+        </button>
+      </div>
+
+      <nav class="tabbar" aria-label="底部导航">
+        <div class="tab-items">
+          <div class="tab" aria-current="page">
+            <span class="tab-icon"><img src="assets/figma-iphone16-connect/tab-home.svg" alt=""></span>
+            <span>主页</span>
+          </div>
+          <div class="tab">
+            <span class="tab-icon tab-store"><img src="assets/figma-iphone16-connect/tab-store.svg" alt=""></span>
+            <span>书城</span>
+          </div>
+          <div class="tab">
+            <span class="tab-icon"><img src="assets/figma-iphone16-connect/tab-wallpaper.svg" alt=""></span>
+            <span>壁纸</span>
+          </div>
+          <div class="tab">
+            <span class="tab-icon tab-apps"><img src="assets/figma-iphone16-connect/tab-apps.svg" alt=""></span>
+            <span>应用</span>
+          </div>
+          <div class="tab">
+            <span class="tab-icon">
+              <img class="settings-poly" src="assets/figma-iphone16-connect/tab-settings-poly.svg" alt="">
+              <img class="settings-dot" src="assets/figma-iphone16-connect/tab-settings-dot.svg" alt="">
+            </span>
+            <span>设置</span>
+          </div>
+        </div>
+        <img class="home-indicator" src="assets/figma-iphone16-connect/home-indicator.svg" alt="">
+      </nav>
+    </section>
+  </main>
+
+  <script>
+    const phone = document.querySelector(".phone");
+
+    function syncScale() {
+      const width = phone.getBoundingClientRect().width;
+      document.documentElement.style.setProperty("--scale", String(width / 440));
+    }
+
+    window.addEventListener("resize", syncScale);
+    syncScale();
+  </script>
+</body>
+</html>
