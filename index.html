@@ -721,6 +721,41 @@
       letter-spacing: 0.2px;
     }
 
+    .connect-motion {
+      position: absolute;
+      top: 754px;
+      left: 184px;
+      width: 90px;
+      height: 90px;
+      display: none;
+      animation: connectingSpin 1100ms linear infinite;
+      transform-origin: center;
+    }
+
+    .connect-motion.is-active {
+      display: block;
+    }
+
+    .connect-motion img {
+      display: block;
+      width: 90px;
+      height: 90px;
+    }
+
+    .connect-motion-dot {
+      position: absolute;
+      left: 39.6px;
+      bottom: 0;
+      width: 10.5px;
+      height: 10.5px;
+    }
+
+    @keyframes connectingSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     .success-device-name {
       margin: 0;
       width: 177px;
@@ -959,6 +994,10 @@
             <p class="success-title" id="successTitle">连接成功</p>
             <p class="success-device-name" id="successDeviceName">Darwin's Onyx epaper</p>
           </div>
+          <div class="connect-motion" id="connectMotion" aria-hidden="true">
+            <img src="assets/figma-iphone16-connect/connecting-ring.png" alt="">
+            <img class="connect-motion-dot" src="assets/figma-iphone16-connect/connecting-dot.svg" alt="">
+          </div>
         </div>
         <button class="sheet-primary" type="button" id="sheetPrimary">已连接，重新检测</button>
         <img class="sheet-home-indicator" src="assets/figma-iphone16-connect/home-indicator.svg" alt="">
@@ -978,6 +1017,7 @@
     const receivePreview = document.querySelector("#receivePreview");
     const successTitle = document.querySelector("#successTitle");
     const successDeviceName = document.querySelector("#successDeviceName");
+    const connectMotion = document.querySelector("#connectMotion");
     const steps = [...document.querySelectorAll(".sheet-step")];
     const pressables = [...document.querySelectorAll("button")];
     const timers = new Set();
@@ -1047,6 +1087,8 @@
       receivePreview.classList.remove("is-active");
       successTitle.textContent = "连接成功";
       successDeviceName.textContent = "Darwin's Onyx epaper";
+      successDeviceName.style.display = "";
+      connectMotion.classList.remove("is-active");
       sheetPrimary.classList.remove("is-disabled");
       sheetPrimary.disabled = false;
       sheetPrimary.textContent = "已连接，重新检测";
@@ -1114,14 +1156,17 @@
       clearQueuedWork();
       receivePreview.classList.remove("is-active");
       connectSheet.classList.add("is-success");
-      successTitle.textContent = "连接中";
-      successDeviceName.textContent = "Darwin's Onyx epaper";
+      successTitle.textContent = "正在连接...";
+      successDeviceName.style.display = "none";
+      connectMotion.classList.add("is-active");
       sheetPrimary.classList.add("is-disabled");
       sheetPrimary.disabled = true;
       sheetPrimary.textContent = "连接中";
 
       queue(() => {
         successTitle.textContent = "连接成功";
+        successDeviceName.style.display = "";
+        connectMotion.classList.remove("is-active");
         sheetPrimary.classList.remove("is-disabled");
         sheetPrimary.disabled = false;
         sheetPrimary.textContent = "导入图书";
