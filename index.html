@@ -443,6 +443,11 @@
       height: 534px;
       border-radius: 24px 24px 0 0;
       background: #f5f3f1;
+      transition: border-radius 360ms ease;
+    }
+
+    .connect-layer.is-success .connect-sheet {
+      border-radius: 40px 40px 0 0;
     }
 
     .sheet-close {
@@ -637,6 +642,99 @@
       width: 132px;
       height: 220px;
       object-fit: cover;
+    }
+
+    .success-content {
+      position: absolute;
+      inset: 0;
+      display: none;
+      opacity: 0;
+      transition: opacity 520ms ease;
+    }
+
+    .connect-layer.is-success .success-content {
+      display: block;
+      opacity: 1;
+    }
+
+    .success-device-shell {
+      position: absolute;
+      top: 477px;
+      left: 151px;
+      width: 137.19px;
+      height: 211.76px;
+      overflow: hidden;
+    }
+
+    .success-device-shell img {
+      position: absolute;
+      top: 0;
+      left: -156.9px;
+      width: 309.14px;
+      height: 211.76px;
+      max-width: none;
+    }
+
+    .success-device-cover {
+      position: absolute;
+      top: 484.71px;
+      left: 156.4px;
+      width: 130.25px;
+      height: 173.67px;
+      overflow: hidden;
+      -webkit-mask-image: url("assets/figma-iphone16-connect/mask.svg");
+      mask-image: url("assets/figma-iphone16-connect/mask.svg");
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-size: 93.26px 158.77px;
+      mask-size: 93.26px 158.77px;
+      -webkit-mask-position: 16.96px 14.64px;
+      mask-position: 16.96px 14.64px;
+    }
+
+    .success-device-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .success-copy {
+      position: absolute;
+      top: 695px;
+      left: 132px;
+      width: 177px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .success-title {
+      margin: 0;
+      width: 177px;
+      color: #333;
+      font-size: 22px;
+      line-height: normal;
+      letter-spacing: 0.2px;
+    }
+
+    .success-device-name {
+      margin: 0;
+      width: 177px;
+      color: #cf643d;
+      font-size: 17px;
+      line-height: normal;
+      letter-spacing: 0.2px;
+    }
+
+    .connect-layer.is-success .sheet-title,
+    .connect-layer.is-success .sheet-card,
+    .connect-layer.is-success .wifi-confirm,
+    .connect-layer.is-success .receive-preview {
+      display: none;
     }
 
     .sheet-primary {
@@ -850,6 +948,18 @@
         <div class="receive-preview" id="receivePreview">
           <img src="assets/figma-iphone16-connect/receive-screen.png" alt="Picco 接收文件界面示意">
         </div>
+        <div class="success-content" id="successContent">
+          <div class="success-device-shell" aria-hidden="true">
+            <img src="assets/figma-iphone16-connect/image2.png" alt="">
+          </div>
+          <div class="success-device-cover" aria-hidden="true">
+            <img src="assets/figma-iphone16-connect/image90.png" alt="">
+          </div>
+          <div class="success-copy">
+            <p class="success-title">连接成功</p>
+            <p class="success-device-name">Darwin's Onyx epaper</p>
+          </div>
+        </div>
         <button class="sheet-primary" type="button" id="sheetPrimary">已连接，重新检测</button>
         <img class="sheet-home-indicator" src="assets/figma-iphone16-connect/home-indicator.svg" alt="">
       </div>
@@ -929,6 +1039,7 @@
       clearQueuedWork();
       steps.forEach((step) => step.classList.remove("is-active", "is-exiting"));
       steps.find((step) => step.dataset.step === "initial").classList.add("is-active");
+      connectSheet.classList.remove("is-success");
       wifiStatusIcon.className = "sheet-status-icon is-hidden";
       wifiConfirm.classList.remove("is-active");
       receivePreview.classList.remove("is-active");
@@ -987,7 +1098,19 @@
         return;
       }
 
+      if (sheetPrimary.textContent.trim() === "进行连接") {
+        goToSuccessStep();
+        return;
+      }
+
       runDetectionFlow();
+    }
+
+    function goToSuccessStep() {
+      clearQueuedWork();
+      receivePreview.classList.remove("is-active");
+      connectSheet.classList.add("is-success");
+      sheetPrimary.textContent = "导入图书";
     }
 
     function setConnectSheetOpen(isOpen) {
