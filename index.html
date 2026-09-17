@@ -614,6 +614,31 @@
       color: #d38c7c;
     }
 
+    .receive-preview {
+      position: absolute;
+      top: 608px;
+      left: 154px;
+      width: 132px;
+      height: 220px;
+      display: none;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: transform 960ms cubic-bezier(.2, .8, .2, 1), opacity 720ms ease;
+    }
+
+    .receive-preview.is-active {
+      display: block;
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .receive-preview img {
+      display: block;
+      width: 132px;
+      height: 220px;
+      object-fit: cover;
+    }
+
     .sheet-primary {
       position: absolute;
       left: 17px;
@@ -808,10 +833,22 @@
               <span class="sheet-card-text">请确认 Picco 和手机连接同个 Wi‑Fi</span>
             </div>
           </div>
+          <div class="sheet-step" data-step="receive">
+            <div class="sheet-card-row">
+              <span class="alert-mark" aria-hidden="true">
+                <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
+                <span>!</span>
+              </span>
+              <span class="sheet-card-text">请在 Picco 上打开「接收文件」界面</span>
+            </div>
+          </div>
         </div>
         <div class="wifi-confirm" id="wifiConfirm">
           <span>当前 Wi‑Fi：</span>
           <span class="wifi-name">StarNotePro</span>
+        </div>
+        <div class="receive-preview" id="receivePreview">
+          <img src="assets/figma-iphone16-connect/receive-screen.png" alt="Picco 接收文件界面示意">
         </div>
         <button class="sheet-primary" type="button" id="sheetPrimary">已连接，重新检测</button>
         <img class="sheet-home-indicator" src="assets/figma-iphone16-connect/home-indicator.svg" alt="">
@@ -828,6 +865,7 @@
     const sheetPrimary = document.querySelector("#sheetPrimary");
     const wifiConfirm = document.querySelector("#wifiConfirm");
     const wifiStatusIcon = document.querySelector("#wifiStatusIcon");
+    const receivePreview = document.querySelector("#receivePreview");
     const steps = [...document.querySelectorAll(".sheet-step")];
     const pressables = [...document.querySelectorAll("button")];
     const timers = new Set();
@@ -893,6 +931,7 @@
       steps.find((step) => step.dataset.step === "initial").classList.add("is-active");
       wifiStatusIcon.className = "sheet-status-icon is-hidden";
       wifiConfirm.classList.remove("is-active");
+      receivePreview.classList.remove("is-active");
       sheetPrimary.classList.remove("is-disabled");
       sheetPrimary.disabled = false;
       sheetPrimary.textContent = "已连接，重新检测";
@@ -901,6 +940,7 @@
     function runDetectionFlow() {
       clearQueuedWork();
       wifiConfirm.classList.remove("is-active");
+      receivePreview.classList.remove("is-active");
       sheetPrimary.classList.add("is-disabled");
       sheetPrimary.disabled = true;
       sheetPrimary.textContent = "检测中";
@@ -923,6 +963,33 @@
       }, 3950);
     }
 
+    function goToReceiveStep() {
+      clearQueuedWork();
+      sheetPrimary.classList.add("is-disabled");
+      sheetPrimary.disabled = true;
+      wifiConfirm.classList.remove("is-active");
+      setStep("receive", { slideLeft: true });
+
+      queue(() => {
+        receivePreview.classList.add("is-active");
+      }, 240);
+
+      queue(() => {
+        sheetPrimary.classList.remove("is-disabled");
+        sheetPrimary.disabled = false;
+        sheetPrimary.textContent = "进行连接";
+      }, 1040);
+    }
+
+    function handlePrimaryAction() {
+      if (sheetPrimary.textContent.trim() === "已确认，下一步") {
+        goToReceiveStep();
+        return;
+      }
+
+      runDetectionFlow();
+    }
+
     function setConnectSheetOpen(isOpen) {
       connectSheet.classList.toggle("is-open", isOpen);
       connectSheet.setAttribute("aria-hidden", String(!isOpen));
@@ -941,7 +1008,7 @@
     openConnectSheet.addEventListener("click", () => setConnectSheetOpen(true));
     closeConnectSheet.addEventListener("click", () => setConnectSheetOpen(false));
     closeConnectSheetByScrim.addEventListener("click", () => setConnectSheetOpen(false));
-    sheetPrimary.addEventListener("click", runDetectionFlow);
+    sheetPrimary.addEventListener("click", handlePrimaryAction);
     pressables.forEach((button) => {
       button.addEventListener("pointerdown", () => {
         if (button.disabled) return;
