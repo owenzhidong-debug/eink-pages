@@ -494,7 +494,7 @@
       padding: 13px 65px 13px 18px;
       opacity: 0;
       transform: translateX(440px);
-      transition: transform 480ms cubic-bezier(.2, .8, .2, 1), opacity 360ms ease;
+      transition: transform 960ms cubic-bezier(.2, .8, .2, 1), opacity 720ms ease;
     }
 
     .sheet-step.is-active {
@@ -557,6 +557,10 @@
       height: 30px;
     }
 
+    .sheet-status-icon.is-hidden {
+      display: none;
+    }
+
     .loading-ring {
       border: 4px solid #f4d2aa;
       border-top-color: #ff9e36;
@@ -597,7 +601,7 @@
       line-height: normal;
       opacity: 0;
       transform: translateX(40px);
-      transition: transform 480ms cubic-bezier(.2, .8, .2, 1), opacity 360ms ease;
+      transition: transform 960ms cubic-bezier(.2, .8, .2, 1), opacity 720ms ease;
     }
 
     .wifi-confirm.is-active {
@@ -793,26 +797,7 @@
               </span>
               <span class="sheet-card-text">请先连接手机 Wi‑Fi</span>
             </div>
-          </div>
-          <div class="sheet-step" data-step="checking">
-            <div class="sheet-card-row">
-              <span class="alert-mark" aria-hidden="true">
-                <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
-                <span>!</span>
-              </span>
-              <span class="sheet-card-text">请先连接手机 Wi‑Fi</span>
-            </div>
-            <span class="sheet-status-icon loading-ring" aria-hidden="true"></span>
-          </div>
-          <div class="sheet-step" data-step="success">
-            <div class="sheet-card-row">
-              <span class="alert-mark" aria-hidden="true">
-                <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
-                <span>!</span>
-              </span>
-              <span class="sheet-card-text">请先连接手机 Wi‑Fi</span>
-            </div>
-            <span class="sheet-status-icon success-check" aria-hidden="true"></span>
+            <span class="sheet-status-icon is-hidden" id="wifiStatusIcon" aria-hidden="true"></span>
           </div>
           <div class="sheet-step" data-step="wifi">
             <div class="sheet-card-row">
@@ -842,6 +827,7 @@
     const closeConnectSheetByScrim = document.querySelector("#closeConnectSheetByScrim");
     const sheetPrimary = document.querySelector("#sheetPrimary");
     const wifiConfirm = document.querySelector("#wifiConfirm");
+    const wifiStatusIcon = document.querySelector("#wifiStatusIcon");
     const steps = [...document.querySelectorAll(".sheet-step")];
     const pressables = [...document.querySelectorAll("button")];
     const timers = new Set();
@@ -897,7 +883,7 @@
       }
 
       if (active && options.slideLeft) {
-        queue(() => active.classList.remove("is-active", "is-exiting"), 520);
+        queue(() => active.classList.remove("is-active", "is-exiting"), 1040);
       }
     }
 
@@ -905,6 +891,7 @@
       clearQueuedWork();
       steps.forEach((step) => step.classList.remove("is-active", "is-exiting"));
       steps.find((step) => step.dataset.step === "initial").classList.add("is-active");
+      wifiStatusIcon.className = "sheet-status-icon is-hidden";
       wifiConfirm.classList.remove("is-active");
       sheetPrimary.classList.remove("is-disabled");
       sheetPrimary.disabled = false;
@@ -917,22 +904,23 @@
       sheetPrimary.classList.add("is-disabled");
       sheetPrimary.disabled = true;
       sheetPrimary.textContent = "检测中";
-      setStep("checking", { instant: true });
+      setStep("initial", { instant: true });
+      wifiStatusIcon.className = "sheet-status-icon loading-ring";
 
       queue(() => {
-        setStep("success", { instant: true });
+        wifiStatusIcon.className = "sheet-status-icon success-check";
       }, 2000);
 
       queue(() => {
         setStep("wifi", { slideLeft: true });
         wifiConfirm.classList.add("is-active");
-      }, 2650);
+      }, 2850);
 
       queue(() => {
         sheetPrimary.classList.remove("is-disabled");
         sheetPrimary.disabled = false;
         sheetPrimary.textContent = "已确认，下一步";
-      }, 3020);
+      }, 3950);
     }
 
     function setConnectSheetOpen(isOpen) {
