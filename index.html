@@ -956,8 +956,8 @@
             <img src="assets/figma-iphone16-connect/image90.png" alt="">
           </div>
           <div class="success-copy">
-            <p class="success-title">连接成功</p>
-            <p class="success-device-name">Darwin's Onyx epaper</p>
+            <p class="success-title" id="successTitle">连接成功</p>
+            <p class="success-device-name" id="successDeviceName">Darwin's Onyx epaper</p>
           </div>
         </div>
         <button class="sheet-primary" type="button" id="sheetPrimary">已连接，重新检测</button>
@@ -976,6 +976,8 @@
     const wifiConfirm = document.querySelector("#wifiConfirm");
     const wifiStatusIcon = document.querySelector("#wifiStatusIcon");
     const receivePreview = document.querySelector("#receivePreview");
+    const successTitle = document.querySelector("#successTitle");
+    const successDeviceName = document.querySelector("#successDeviceName");
     const steps = [...document.querySelectorAll(".sheet-step")];
     const pressables = [...document.querySelectorAll("button")];
     const timers = new Set();
@@ -1043,6 +1045,8 @@
       wifiStatusIcon.className = "sheet-status-icon is-hidden";
       wifiConfirm.classList.remove("is-active");
       receivePreview.classList.remove("is-active");
+      successTitle.textContent = "连接成功";
+      successDeviceName.textContent = "Darwin's Onyx epaper";
       sheetPrimary.classList.remove("is-disabled");
       sheetPrimary.disabled = false;
       sheetPrimary.textContent = "已连接，重新检测";
@@ -1110,7 +1114,18 @@
       clearQueuedWork();
       receivePreview.classList.remove("is-active");
       connectSheet.classList.add("is-success");
-      sheetPrimary.textContent = "导入图书";
+      successTitle.textContent = "连接中";
+      successDeviceName.textContent = "Darwin's Onyx epaper";
+      sheetPrimary.classList.add("is-disabled");
+      sheetPrimary.disabled = true;
+      sheetPrimary.textContent = "连接中";
+
+      queue(() => {
+        successTitle.textContent = "连接成功";
+        sheetPrimary.classList.remove("is-disabled");
+        sheetPrimary.disabled = false;
+        sheetPrimary.textContent = "导入图书";
+      }, 2000);
     }
 
     function setConnectSheetOpen(isOpen) {
