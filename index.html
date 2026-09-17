@@ -857,8 +857,20 @@
         active.classList.remove("is-active", "is-exiting");
       }
 
-      next.classList.remove("is-exiting");
-      next.classList.add("is-active");
+      if (options.instant) {
+        next.style.transition = "none";
+        next.style.transform = "translateX(0)";
+        next.style.opacity = "1";
+        next.classList.remove("is-exiting");
+        next.classList.add("is-active");
+        next.offsetHeight;
+        next.style.transition = "";
+        next.style.transform = "";
+        next.style.opacity = "";
+      } else {
+        next.classList.remove("is-exiting");
+        next.classList.add("is-active");
+      }
 
       if (active && options.slideLeft) {
         queue(() => active.classList.remove("is-active", "is-exiting"), 520);
@@ -884,7 +896,7 @@
       setStep("checking");
 
       queue(() => {
-        setStep("success");
+        setStep("success", { instant: true });
       }, 2000);
 
       queue(() => {
