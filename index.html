@@ -220,6 +220,11 @@
       font: inherit;
     }
 
+    .connection-state.is-selected {
+      background: #edd6cd;
+      box-shadow: 0 0 0 1px rgb(210 139 121 / 18%) inset;
+    }
+
     .connection-dot {
       width: 6px;
       height: 6px;
@@ -645,6 +650,23 @@
     button {
       -webkit-tap-highlight-color: transparent;
       cursor: pointer;
+      transition: transform 120ms ease, filter 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+      transform-origin: center;
+    }
+
+    button.is-pressed {
+      filter: brightness(.94);
+      transform: scale(.97);
+    }
+
+    .sheet-primary.is-pressed {
+      filter: brightness(1.18);
+      transform: scale(.985);
+    }
+
+    .scrim.is-pressed {
+      filter: none;
+      transform: none;
     }
 
     @media (min-width: 441px) {
@@ -821,7 +843,9 @@
     const sheetPrimary = document.querySelector("#sheetPrimary");
     const wifiConfirm = document.querySelector("#wifiConfirm");
     const steps = [...document.querySelectorAll(".sheet-step")];
+    const pressables = [...document.querySelectorAll("button")];
     const timers = new Set();
+    const pressTimers = new WeakMap();
 
     function queue(callback, delay) {
       const timer = window.setTimeout(() => {
@@ -893,7 +917,7 @@
       sheetPrimary.classList.add("is-disabled");
       sheetPrimary.disabled = true;
       sheetPrimary.textContent = "检测中";
-      setStep("checking");
+      setStep("checking", { instant: true });
 
       queue(() => {
         setStep("success", { instant: true });
@@ -914,6 +938,7 @@
     function setConnectSheetOpen(isOpen) {
       connectSheet.classList.toggle("is-open", isOpen);
       connectSheet.setAttribute("aria-hidden", String(!isOpen));
+      openConnectSheet.classList.toggle("is-selected", isOpen);
 
       if (!isOpen) {
         resetSheetFlow();
@@ -929,6 +954,28 @@
     closeConnectSheet.addEventListener("click", () => setConnectSheetOpen(false));
     closeConnectSheetByScrim.addEventListener("click", () => setConnectSheetOpen(false));
     sheetPrimary.addEventListener("click", runDetectionFlow);
+    pressables.forEach((button) => {
+      button.addEventListener("pointerdown", () => {
+        if (button.disabled) return;
+        window.clearTimeout(pressTimers.get(button));
+        button.classList.add("is-pressed");
+      });
+      button.addEventListener("pointerup", () => {
+        const timer = window.setTimeout(() => button.classList.remove("is-pressed"), 180);
+        pressTimers.set(button, timer);
+      });
+      button.addEventListener("pointerleave", () => {
+        const timer = window.setTimeout(() => button.classList.remove("is-pressed"), 120);
+        pressTimers.set(button, timer);
+      });
+      button.addEventListener("click", () => {
+        if (button.disabled) return;
+        window.clearTimeout(pressTimers.get(button));
+        button.classList.add("is-pressed");
+        const timer = window.setTimeout(() => button.classList.remove("is-pressed"), 180);
+        pressTimers.set(button, timer);
+      });
+    });
     window.addEventListener("resize", syncScale);
     syncScale();
   </script>
