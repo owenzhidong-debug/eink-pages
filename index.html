@@ -210,12 +210,14 @@
       top: 265px;
       left: 184px;
       height: 36px;
+      border: 0;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 10px 16px 10px 13px;
       border-radius: 18px;
       background: rgb(153 153 153 / 20%);
+      font: inherit;
     }
 
     .connection-dot {
@@ -409,6 +411,145 @@
       height: 5px;
     }
 
+    .connect-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+    }
+
+    .connect-layer.is-open {
+      display: block;
+    }
+
+    .scrim {
+      position: absolute;
+      inset: 0;
+      border: 0;
+      padding: 0;
+      background: rgb(0 0 0 / 70%);
+    }
+
+    .connect-sheet {
+      position: absolute;
+      top: 422px;
+      left: 0;
+      width: 440px;
+      height: 534px;
+      border-radius: 24px 24px 0 0;
+      background: #f5f3f1;
+    }
+
+    .sheet-close {
+      position: absolute;
+      top: 16px;
+      left: 398px;
+      width: 26px;
+      height: 26px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+    }
+
+    .sheet-close img {
+      display: block;
+      width: 26px;
+      height: 26px;
+    }
+
+    .sheet-title {
+      position: absolute;
+      top: 463px;
+      left: 130px;
+      width: 180px;
+      margin: 0;
+      color: #333;
+      font-size: 22px;
+      font-weight: 500;
+      line-height: normal;
+      text-align: center;
+    }
+
+    .sheet-card {
+      position: absolute;
+      top: 526px;
+      left: 17px;
+      width: 408px;
+      height: 76px;
+      border-radius: 18px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      padding: 13px 65px 13px 18px;
+    }
+
+    .sheet-card-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 325px;
+      height: 26px;
+    }
+
+    .alert-mark {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+    }
+
+    .alert-mark img {
+      display: block;
+      width: 26px;
+      height: 26px;
+    }
+
+    .alert-mark span {
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #999;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: normal;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .sheet-card-text {
+      color: #333;
+      font-size: 17px;
+      font-weight: 500;
+      line-height: normal;
+      white-space: nowrap;
+    }
+
+    .sheet-primary {
+      position: absolute;
+      left: 17px;
+      bottom: 53px;
+      width: 408px;
+      height: 56px;
+      border: 0;
+      border-radius: 18px;
+      background: #000;
+      color: #fff;
+      font: inherit;
+      font-size: 17px;
+      font-weight: 500;
+      line-height: normal;
+      text-align: center;
+    }
+
+    .sheet-home-indicator {
+      position: absolute;
+      left: 153px;
+      bottom: 5.5px;
+      width: 134px;
+      height: 5px;
+    }
+
     button {
       -webkit-tap-highlight-color: transparent;
       cursor: pointer;
@@ -453,10 +594,10 @@
         <p class="device-model">Boox Tile</p>
       </div>
 
-      <div class="connection-state">
+      <button class="connection-state" type="button" id="openConnectSheet" aria-haspopup="dialog" aria-controls="connectSheet">
         <img class="connection-dot" src="assets/figma-iphone16-connect/ellipse24.svg" alt="">
         <span class="connection-text">未连接</span>
-      </div>
+      </button>
 
       <button class="device-switch" aria-label="切换设备">
         <img src="assets/figma-iphone16-connect/chevron.svg" alt="">
@@ -520,17 +661,50 @@
         </div>
         <img class="home-indicator" src="assets/figma-iphone16-connect/home-indicator.svg" alt="">
       </nav>
+
+      <div class="connect-layer" id="connectSheet" role="dialog" aria-modal="true" aria-labelledby="connectSheetTitle" aria-hidden="true">
+        <button class="scrim" type="button" id="closeConnectSheetByScrim" aria-label="关闭连接面板"></button>
+        <div class="connect-sheet">
+          <button class="sheet-close" type="button" id="closeConnectSheet" aria-label="关闭">
+            <img src="assets/figma-iphone16-connect/sheet-close.svg" alt="">
+          </button>
+        </div>
+        <h2 class="sheet-title" id="connectSheetTitle">连接 Picco</h2>
+        <div class="sheet-card">
+          <div class="sheet-card-row">
+            <span class="alert-mark" aria-hidden="true">
+              <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
+              <span>!</span>
+            </span>
+            <span class="sheet-card-text">请先连接手机 Wi‑Fi</span>
+          </div>
+        </div>
+        <button class="sheet-primary" type="button">已连接，重新检测</button>
+        <img class="sheet-home-indicator" src="assets/figma-iphone16-connect/home-indicator.svg" alt="">
+      </div>
     </section>
   </main>
 
   <script>
     const phone = document.querySelector(".phone");
+    const connectSheet = document.querySelector("#connectSheet");
+    const openConnectSheet = document.querySelector("#openConnectSheet");
+    const closeConnectSheet = document.querySelector("#closeConnectSheet");
+    const closeConnectSheetByScrim = document.querySelector("#closeConnectSheetByScrim");
+
+    function setConnectSheetOpen(isOpen) {
+      connectSheet.classList.toggle("is-open", isOpen);
+      connectSheet.setAttribute("aria-hidden", String(!isOpen));
+    }
 
     function syncScale() {
       const width = phone.getBoundingClientRect().width;
       document.documentElement.style.setProperty("--scale", String(width / 440));
     }
 
+    openConnectSheet.addEventListener("click", () => setConnectSheetOpen(true));
+    closeConnectSheet.addEventListener("click", () => setConnectSheetOpen(false));
+    closeConnectSheetByScrim.addEventListener("click", () => setConnectSheetOpen(false));
     window.addEventListener("resize", syncScale);
     syncScale();
   </script>
