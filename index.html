@@ -478,9 +478,28 @@
       height: 76px;
       border-radius: 18px;
       background: #fff;
+      overflow: hidden;
+    }
+
+    .sheet-step {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       padding: 13px 65px 13px 18px;
+      opacity: 0;
+      transform: translateX(440px);
+      transition: transform 480ms cubic-bezier(.2, .8, .2, 1), opacity 360ms ease;
+    }
+
+    .sheet-step.is-active {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .sheet-step.is-exiting {
+      opacity: 0;
+      transform: translateX(-300px);
     }
 
     .sheet-card-row {
@@ -525,6 +544,67 @@
       white-space: nowrap;
     }
 
+    .sheet-status-icon {
+      position: absolute;
+      top: 23px;
+      right: 18px;
+      width: 30px;
+      height: 30px;
+    }
+
+    .loading-ring {
+      border: 4px solid #f4d2aa;
+      border-top-color: #ff9e36;
+      border-radius: 50%;
+      animation: spin 850ms linear infinite;
+    }
+
+    .success-check {
+      border-radius: 50%;
+      background: #33c465;
+    }
+
+    .success-check::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 7px;
+      width: 15px;
+      height: 8px;
+      border-left: 4px solid #fff;
+      border-bottom: 4px solid #fff;
+      border-radius: 1px;
+      transform: rotate(-45deg);
+    }
+
+    .wifi-confirm {
+      position: absolute;
+      top: 646px;
+      left: 0;
+      width: 440px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: #333;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: normal;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: transform 480ms cubic-bezier(.2, .8, .2, 1), opacity 360ms ease;
+    }
+
+    .wifi-confirm.is-active {
+      display: flex;
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .wifi-name {
+      color: #d38c7c;
+    }
+
     .sheet-primary {
       position: absolute;
       left: 17px;
@@ -542,12 +622,24 @@
       text-align: center;
     }
 
+    .sheet-primary.is-disabled {
+      background: #adadad;
+      color: #fff;
+      cursor: default;
+    }
+
     .sheet-home-indicator {
       position: absolute;
       left: 153px;
       bottom: 5.5px;
       width: 134px;
       height: 5px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     button {
@@ -671,15 +763,50 @@
         </div>
         <h2 class="sheet-title" id="connectSheetTitle">连接 Picco</h2>
         <div class="sheet-card">
-          <div class="sheet-card-row">
-            <span class="alert-mark" aria-hidden="true">
-              <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
-              <span>!</span>
-            </span>
-            <span class="sheet-card-text">请先连接手机 Wi‑Fi</span>
+          <div class="sheet-step is-active" data-step="initial">
+            <div class="sheet-card-row">
+              <span class="alert-mark" aria-hidden="true">
+                <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
+                <span>!</span>
+              </span>
+              <span class="sheet-card-text">请先连接手机 Wi‑Fi</span>
+            </div>
+          </div>
+          <div class="sheet-step" data-step="checking">
+            <div class="sheet-card-row">
+              <span class="alert-mark" aria-hidden="true">
+                <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
+                <span>!</span>
+              </span>
+              <span class="sheet-card-text">请先连接手机 Wi‑Fi</span>
+            </div>
+            <span class="sheet-status-icon loading-ring" aria-hidden="true"></span>
+          </div>
+          <div class="sheet-step" data-step="success">
+            <div class="sheet-card-row">
+              <span class="alert-mark" aria-hidden="true">
+                <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
+                <span>!</span>
+              </span>
+              <span class="sheet-card-text">请先连接手机 Wi‑Fi</span>
+            </div>
+            <span class="sheet-status-icon success-check" aria-hidden="true"></span>
+          </div>
+          <div class="sheet-step" data-step="wifi">
+            <div class="sheet-card-row">
+              <span class="alert-mark" aria-hidden="true">
+                <img src="assets/figma-iphone16-connect/sheet-alert-circle.svg" alt="">
+                <span>!</span>
+              </span>
+              <span class="sheet-card-text">请确认 Picco 和手机连接同个 Wi‑Fi</span>
+            </div>
           </div>
         </div>
-        <button class="sheet-primary" type="button">已连接，重新检测</button>
+        <div class="wifi-confirm" id="wifiConfirm">
+          <span>当前 Wi‑Fi：</span>
+          <span class="wifi-name">StarNotePro</span>
+        </div>
+        <button class="sheet-primary" type="button" id="sheetPrimary">已连接，重新检测</button>
         <img class="sheet-home-indicator" src="assets/figma-iphone16-connect/home-indicator.svg" alt="">
       </div>
     </section>
@@ -691,10 +818,94 @@
     const openConnectSheet = document.querySelector("#openConnectSheet");
     const closeConnectSheet = document.querySelector("#closeConnectSheet");
     const closeConnectSheetByScrim = document.querySelector("#closeConnectSheetByScrim");
+    const sheetPrimary = document.querySelector("#sheetPrimary");
+    const wifiConfirm = document.querySelector("#wifiConfirm");
+    const steps = [...document.querySelectorAll(".sheet-step")];
+    const timers = new Set();
+
+    function queue(callback, delay) {
+      const timer = window.setTimeout(() => {
+        timers.delete(timer);
+        callback();
+      }, delay);
+      timers.add(timer);
+      return timer;
+    }
+
+    function clearQueuedWork() {
+      for (const timer of timers) {
+        window.clearTimeout(timer);
+      }
+      timers.clear();
+    }
+
+    function setStep(name, options = {}) {
+      const active = steps.find((step) => step.classList.contains("is-active"));
+      const next = steps.find((step) => step.dataset.step === name);
+
+      if (!next || active === next) return;
+
+      steps.forEach((step) => {
+        if (step !== active && step !== next) {
+          step.classList.remove("is-active", "is-exiting");
+        }
+      });
+
+      if (active && options.slideLeft) {
+        active.classList.add("is-exiting");
+      } else if (active) {
+        active.classList.remove("is-active", "is-exiting");
+      }
+
+      next.classList.remove("is-exiting");
+      next.classList.add("is-active");
+
+      if (active && options.slideLeft) {
+        queue(() => active.classList.remove("is-active", "is-exiting"), 520);
+      }
+    }
+
+    function resetSheetFlow() {
+      clearQueuedWork();
+      steps.forEach((step) => step.classList.remove("is-active", "is-exiting"));
+      steps.find((step) => step.dataset.step === "initial").classList.add("is-active");
+      wifiConfirm.classList.remove("is-active");
+      sheetPrimary.classList.remove("is-disabled");
+      sheetPrimary.disabled = false;
+      sheetPrimary.textContent = "已连接，重新检测";
+    }
+
+    function runDetectionFlow() {
+      clearQueuedWork();
+      wifiConfirm.classList.remove("is-active");
+      sheetPrimary.classList.add("is-disabled");
+      sheetPrimary.disabled = true;
+      sheetPrimary.textContent = "检测中";
+      setStep("checking");
+
+      queue(() => {
+        setStep("success");
+      }, 2000);
+
+      queue(() => {
+        setStep("wifi", { slideLeft: true });
+        wifiConfirm.classList.add("is-active");
+      }, 2650);
+
+      queue(() => {
+        sheetPrimary.classList.remove("is-disabled");
+        sheetPrimary.disabled = false;
+        sheetPrimary.textContent = "已确认，下一步";
+      }, 3020);
+    }
 
     function setConnectSheetOpen(isOpen) {
       connectSheet.classList.toggle("is-open", isOpen);
       connectSheet.setAttribute("aria-hidden", String(!isOpen));
+
+      if (!isOpen) {
+        resetSheetFlow();
+      }
     }
 
     function syncScale() {
@@ -705,6 +916,7 @@
     openConnectSheet.addEventListener("click", () => setConnectSheetOpen(true));
     closeConnectSheet.addEventListener("click", () => setConnectSheetOpen(false));
     closeConnectSheetByScrim.addEventListener("click", () => setConnectSheetOpen(false));
+    sheetPrimary.addEventListener("click", runDetectionFlow);
     window.addEventListener("resize", syncScale);
     syncScale();
   </script>
